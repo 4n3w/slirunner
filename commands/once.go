@@ -17,6 +17,7 @@ type onceCommand struct {
 	Username     string `long:"username"      short:"u" required:"true"`
 	Password     string `long:"password"      short:"p" required:"true"`
 	ConcourseUrl string `long:"concourse-url" short:"c" required:"true"`
+	InsecureTls  bool   `long:"insecure-tls"  short:"k" required:"false" description:"Skip tls verification"`
 }
 
 func (c *onceCommand) Execute(args []string) (err error) {
@@ -33,6 +34,7 @@ func (c *onceCommand) Execute(args []string) (err error) {
 		c.Username, c.Password,
 		c.ConcourseUrl,
 		c.PipelinesPrefix,
+		c.InsecureTls,
 	).Run(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())

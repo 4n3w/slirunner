@@ -7,25 +7,38 @@ import (
 	"github.com/cirocosta/slirunner/runnable"
 )
 
-func NewLogin(target, username, password, concourseUrl string) runnable.Runnable {
+func NewLogin(target, username, password, concourseUrl string, insecureTls bool) runnable.Runnable {
 	var (
 		config = Config{
 			Target:       target,
 			Username:     username,
 			Password:     password,
 			ConcourseUrl: concourseUrl,
+			InsecureTls:  insecureTls,
 		}
 		timeout = 60 * time.Second
 	)
 
+	var loginCommand string
+
+	if insecureTls {
+		loginCommand = `
+
+		fly -t {{ .Target }} login -u {{ .Username }} -p {{ .Password }} -c {{ .ConcourseUrl }} -k
+
+		`
+	} else {
+		loginCommand = `
+
+		fly -t {{ .Target }} login -u {{ .Username }} -p {{ .Password }} -c {{ .ConcourseUrl }} 
+
+		`
+	}
+
 	return runnable.NewWithLogging("login",
 		runnable.NewWithMetrics("login",
 			runnable.NewWithTimeout(
-				runnable.NewShellCommand(FormatProbe(`
-
-	fly -t {{ .Target }} login -u {{ .Username }} -p {{ .Password }} -c {{ .ConcourseUrl }}
-
-				`, config), os.Stderr),
+				runnable.NewShellCommand(FormatProbe(loginCommand, config), os.Stderr),
 				timeout,
 			),
 		),
@@ -156,10 +169,10 @@ func NewRunExistingPipeline(target, prefix string) runnable.Runnable {
 	)
 }
 
-func NewAll(target, username, password, concourseUrl, prefix string) runnable.Runnable {
+func NewAll(target, username, password, concourseUrl, prefix string, insecureTls bool) runnable.Runnable {
 	return runnable.NewSequentially([]runnable.Runnable{
 
-		NewLogin(target, username, password, concourseUrl),
+		NewLogin(target, username, password, concourseUrl, insecureTls),
 		NewSync(target),
 
 		runnable.NewConcurrently([]runnable.Runnable{

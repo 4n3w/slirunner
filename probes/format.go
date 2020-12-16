@@ -11,6 +11,7 @@ type Config struct {
 	Username     string
 	Password     string
 	ConcourseUrl string
+	InsecureTls  bool
 
 	Target           string
 	ExistingPipeline string
