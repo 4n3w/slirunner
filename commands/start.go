@@ -22,6 +22,9 @@ type startCommand struct {
 	ConcourseUrl string `long:"concourse-url" short:"c" required:"true"  description:"URL of the concourse to monitor"`
 	InsecureTls  bool   `long:"insecure-tls"  short:"k" required:"false" description:"Skip tls verification"`
 
+	LdapAuth bool   `long:"ldapauth"      short:"l" required:"false" description:"LDAP boolean if using ldap auth"`
+	LdapTeam string `long:"ldapteam"      short:"m" required:"false" description:"LDAP team if using ldap auth"`
+
 	Prometheus exporter.Exporter `group:"Prometheus configuration"`
 }
 
@@ -33,6 +36,7 @@ func (c *startCommand) Execute(args []string) (err error) {
 			c.ConcourseUrl,
 			c.PipelinesPrefix,
 			c.InsecureTls,
+			c.LdapAuth, c.LdapTeam,
 		)
 		ticker = time.NewTicker(c.Interval)
 	)

@@ -35,7 +35,7 @@ FROM alpine AS concourse-release
 
 FROM ubuntu AS release
 
-	RUN apt update && apt install -y ca-certificates
+    RUN apt update && apt install -y ca-certificates && apt install curl -y
 
 	COPY \
 		--from=concourse-release \

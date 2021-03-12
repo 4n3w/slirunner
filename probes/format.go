@@ -8,8 +8,12 @@ import (
 )
 
 type Config struct {
-	Username     string
-	Password     string
+	Username string
+	Password string
+
+	LdapAuth bool
+	LdapTeam string
+
 	ConcourseUrl string
 	InsecureTls  bool
 

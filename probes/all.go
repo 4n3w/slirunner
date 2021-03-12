@@ -1,13 +1,12 @@
 package probes
 
 import (
+	"github.com/cirocosta/slirunner/runnable"
 	"os"
 	"time"
-
-	"github.com/cirocosta/slirunner/runnable"
 )
 
-func NewLogin(target, username, password, concourseUrl string, insecureTls bool) runnable.Runnable {
+func NewLogin(target, username, password, concourseUrl string, insecureTls bool, ldapAuth bool, ldapTeam string) runnable.Runnable {
 	var (
 		config = Config{
 			Target:       target,
@@ -15,13 +14,41 @@ func NewLogin(target, username, password, concourseUrl string, insecureTls bool)
 			Password:     password,
 			ConcourseUrl: concourseUrl,
 			InsecureTls:  insecureTls,
+			LdapAuth:     ldapAuth,
+			LdapTeam:     ldapTeam,
 		}
 		timeout = 60 * time.Second
 	)
 
 	var loginCommand string
 
-	if insecureTls {
+	if ldapAuth {
+		loginCommand = `
+
+        CONCOURSE_URL="{{ .ConcourseUrl }}"
+        CONCOURSE_USER="{{ .Username }}"
+        CONCOURSE_PASSWORD="{{ .Password }}"
+        CONCOURSE_TARGET="{{ .Target }}"
+        > token
+        LDAP_AUTH_URL=$CONCOURSE_URL$(curl -k -b token -c token -L "$CONCOURSE_URL/sky/login" -s | grep "/sky/issuer/auth/ldap?" | awk -F'"' '{print $2}')
+        curl -k -s -b token -c token -L --data-urlencode "login=$CONCOURSE_USER" --data-urlencode "password=$CONCOURSE_PASSWORD" "$LDAP_AUTH_URL"
+        ATC_BEARER_TOKEN=$(cat token | grep skymarshal_auth0  | cut -f 7 | tr -d \" | sed 's/bearer//')
+
+        cat <<ENDOFSCRIPT > ~/.flyrc
+targets:
+  $CONCOURSE_TARGET:
+    api: $CONCOURSE_URL
+    insecure: true
+    team: {{ .LdapTeam }}
+    token:
+      type: Bearer
+      value: $ATC_BEARER_TOKEN
+ENDOFSCRIPT
+
+        fly -t {{ .Target }} status
+
+        `
+	} else if insecureTls {
 		loginCommand = `
 
 		fly -t {{ .Target }} login -u {{ .Username }} -p {{ .Password }} -c {{ .ConcourseUrl }} -k
@@ -30,7 +57,7 @@ func NewLogin(target, username, password, concourseUrl string, insecureTls bool)
 	} else {
 		loginCommand = `
 
-		fly -t {{ .Target }} login -u {{ .Username }} -p {{ .Password }} -c {{ .ConcourseUrl }} 
+		fly -t {{ .Target }} login -u {{ .Username }} -p {{ .Password }} -c {{ .ConcourseUrl }}
 
 		`
 	}
@@ -169,10 +196,13 @@ func NewRunExistingPipeline(target, prefix string) runnable.Runnable {
 	)
 }
 
-func NewAll(target, username, password, concourseUrl, prefix string, insecureTls bool) runnable.Runnable {
+func NewAll(target, username, password, concourseUrl, prefix string, insecureTls bool, ldapAuth bool, ldapTeam string) runnable.Runnable {
+    if ldapAuth && len(ldapTeam) == 0 {
+        ldapTeam = "concourse-monitoring"
+    }
 	return runnable.NewSequentially([]runnable.Runnable{
 
-		NewLogin(target, username, password, concourseUrl, insecureTls),
+		NewLogin(target, username, password, concourseUrl, insecureTls, ldapAuth, ldapTeam),
 		NewSync(target),
 
 		runnable.NewConcurrently([]runnable.Runnable{

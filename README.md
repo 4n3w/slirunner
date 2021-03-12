@@ -5,10 +5,8 @@
 
 ![sample dashboard](https://user-images.githubusercontent.com/3574444/59943990-a8559480-9431-11e9-8a0e-0ffefa157cce.png)
 
-
 [concourse]: https://concourse-ci.org 
 [slis]: https://landing.google.com/sre/sre-book/chapters/service-level-objectives/
-
 
 ## why
 
@@ -19,8 +17,6 @@ performing.
 With SLIs , one is able to better reason about what's broken on user-facing
 functionality that the service exposes.
 
-
-	
 ## prior
 
 Before `slirunner`, [oxygen-mask][oxygen-mask] was the solution for running
@@ -32,10 +28,7 @@ It has a few quirks that I don't think are necessary to have:
 - tightly coupled to datadog
 - performs UI testing
 
-
 [oxygen-mask]: https://github.com/concourse/oxygen-mask
-
-
 
 ## what
 
@@ -48,16 +41,13 @@ A consumer of `slirunner` can consume the reports from two mediums:
 - [Prometheus][prometheus] exposed metrics
 - structured logs
 
-
 It also supports:
 
 - single runs
 - TODO: worker-related probing against multiple tags and teams
 
-
 [go]: https://golang.org/
 [prometheus]: https://prometheus.io/
-
 
 ## usage
 
@@ -100,7 +90,6 @@ slirunner start \
   --concourse-url $URL_OF_THE_CONCOURSE_INSTALLATION
 ```
 
-
 ### using docker / kubernetes
 
 A container image `cirocosta/slirunner` is continuously pushed to
@@ -123,7 +112,6 @@ services:
 
 For kubernetes, check out the example under
 [`./examples/kubernetes.yaml`](./examples/kubernetes.yaml).
-
 
 ## license
 

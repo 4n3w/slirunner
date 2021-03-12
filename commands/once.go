@@ -18,6 +18,9 @@ type onceCommand struct {
 	Password     string `long:"password"      short:"p" required:"true"`
 	ConcourseUrl string `long:"concourse-url" short:"c" required:"true"`
 	InsecureTls  bool   `long:"insecure-tls"  short:"k" required:"false" description:"Skip tls verification"`
+
+	LdapAuth bool   `long:"ldapauth"      short:"l" required:"false" description:"LDAP boolean if using ldap auth"`
+	LdapTeam string `long:"ldapteam"      short:"m" required:"false" description:"LDAP team if using ldap auth"`
 }
 
 func (c *onceCommand) Execute(args []string) (err error) {
@@ -35,6 +38,7 @@ func (c *onceCommand) Execute(args []string) (err error) {
 		c.ConcourseUrl,
 		c.PipelinesPrefix,
 		c.InsecureTls,
+		c.LdapAuth, c.LdapTeam,
 	).Run(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
