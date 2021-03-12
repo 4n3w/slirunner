@@ -30,7 +30,7 @@ func NewLogin(target, username, password, concourseUrl string, insecureTls bool,
         CONCOURSE_PASSWORD="{{ .Password }}"
         CONCOURSE_TARGET="{{ .Target }}"
         > token
-        LDAP_AUTH_URL=$CONCOURSE_URL$(curl -k -b token -c token -L "$CONCOURSE_URL/sky/login" -s | grep "/sky/issuer/auth/local?" | awk -F'"' '{print $4}')
+        LDAP_AUTH_URL=$CONCOURSE_URL$(curl -k -b token -c token -L "$CONCOURSE_URL/sky/login" -s | grep "/sky/issuer/auth" | awk -F'"' '{print $4}')
         curl -k -s -b token -c token -L --data-urlencode "login=$CONCOURSE_USER" --data-urlencode "password=$CONCOURSE_PASSWORD" "$LDAP_AUTH_URL"
         ATC_BEARER_TOKEN=$(cat token | grep skymarshal_auth0  | cut -f 7 | tr -d \" | sed 's/bearer//')
 
